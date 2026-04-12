@@ -52,3 +52,20 @@ class DataProcessor:
 
         return self
     
+    # Obsługa braku wartości
+    def handle_missing_values(self):
+        self.line()
+        print("\nUzupełnianie braków")
+
+        num_cols = self.df.select_dtypes(include=np.number).columns
+        for col in num_cols:
+            self.df[col].fillna(self.df[col].median(), inplace=True)
+
+        cat_cols = self.df.select_dtypes(include='object').columns
+        for col in cat_cols:
+            self.df[col].fillna(self.df[col].mode()[0], inplace=True)
+
+        print("Braki po uzupełnieniu:")
+        print(self.df.isnull().sum())
+
+        return self
