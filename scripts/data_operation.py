@@ -82,3 +82,31 @@ class DataProcessor:
 
         return self
     
+    # Podział danych
+    def split_data(self):
+        self.line()
+        print("\nPodział danych")
+
+        X_train, X_temp, y_train, y_temp = train_test_split(
+            self.X,
+            self.y,
+            test_size=0.4,
+            random_state=self.random_state
+        )
+
+        X_val, X_test, y_val, y_test = train_test_split(
+            X_temp,
+            y_temp,
+            test_size=0.5,
+            random_state=self.random_state
+        )
+
+        self.X_train, self.X_val, self.X_test = X_train, X_val, X_test
+        self.y_train, self.y_val, self.y_test = y_train, y_val, y_test
+
+        print("Train:", X_train.shape)
+        print("Val:", X_val.shape)
+        print("Test:", X_test.shape)
+
+        return self
+    
