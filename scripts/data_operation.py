@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from data_fetch import DataFetch
@@ -71,9 +73,12 @@ class DataProcessor:
         if target_column is None:
             target_column = self.df.columns[-1]
 
-        self.df = pd.get_dummies(self.df, drop_first=True)
+        self.y = self.df[target_column].copy()
         self.X = self.df.drop(columns=[target_column])
-        self.y = self.df[target_column]
+
+        self.X = pd.get_dummies(self.X, drop_first=True)
+
+        self.y = self.y.astype(int)
 
         return self
     
@@ -118,6 +123,25 @@ class DataProcessor:
         
         return self
     
+    def test_knn(self, k=None):
+        self.line()
+        print("\nTest KNN")
+
+        if k is None:
+            k = self.k
+
+        model = KNeighborsClassifier(n_neighbors=k)
+        model.fit(self.X_train, self.y_train)
+
+        y_pred = model.predict(self.X_val)
+
+        acc = accuracy_score(self.y_val, y_pred)
+
+        print(f"K = {k}")
+        print(f"Accuracy (val): {acc:.4f}")
+
+        return acc
+    
     # Wykaz danych
     def show_basic_info(self):
         print("\nInfo:")
@@ -137,3 +161,5 @@ if __name__ == '__main__':
          .prepare_features() \
          .split_data() \
          .scale_data()
+    
+    processor.test_knn()
