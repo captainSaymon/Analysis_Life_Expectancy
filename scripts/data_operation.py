@@ -131,3 +131,11 @@ class DataProcessor:
         print('-'*n)
 
 
+if __name__ == '__main__':
+    processor = DataProcessor()
+
+    processor.clean_data() \
+         .handle_missing_values() \
+         .prepare_features(target_column="Life expectancy ") \
+         .split_data() \
+         .scale_data()
