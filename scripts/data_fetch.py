@@ -7,7 +7,7 @@ class DataFetch:
     def __init__(self):
         self.data = None
 
-    def run(self):
+    def fetch_dataset(self):
         self.data = kagglehub.load_dataset(
             KaggleDatasetAdapter.PANDAS,
             "kumarajarshi/life-expectancy-who",
@@ -24,11 +24,3 @@ class DataFetch:
             print("Cache wyczyszczony")
         else:
             print("Dane w cache nie istnieja")
-
-    def printNumberRecords(self, n):
-        print(f"\nFirst {n} records: ", self.data.head(n))
-
-if __name__ == '__main__':
-    df = DataFetch()
-    df.run()
-    df.printNumberRecords(10)
