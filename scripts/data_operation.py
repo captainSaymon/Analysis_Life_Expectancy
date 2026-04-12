@@ -121,3 +121,13 @@ class DataProcessor:
         
         return self
     
+    # Wykaz danych
+    def show_basic_info(self):
+        print("\nInfo:")
+        print(self.df.info())
+
+    # Linie
+    def line(self, n=100):
+        print('-'*n)
+
+
