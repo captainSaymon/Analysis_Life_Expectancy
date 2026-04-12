@@ -11,16 +11,44 @@ from data_fetch import DataFetch
 
 class DataProcessor:
     def __init__(self):
-        self.df = self.fetch_data()
+        self.fetch_data()
 
-    # pobranie danych
+        self.X = None
+        self.y = None
+
+        self.X_train = None
+        self.X_val = None
+        self.X_test = None
+
+        self.y_train = None
+        self.y_val = None
+        self.y_test = None
+
+        self.scaler = StandardScaler()
+
+        # hiperparametry
+        self.k = 9
+        self.random_state = 40
+
+    # Pobranie danych
     def fetch_data(self):
+        self.line()
         self.df = DataFetch().fetch_dataset().data.copy()
 
-    def show_basic_info(self):
-        print("\nInfo:")
-        print(self.df.info())
+    # Czyszczenie danych
+    def clean_data(self):
+        self.line()
+        print("\nCzyszczenie danych")
 
+        self.df.replace('?', np.nan, inplace=True)
 
-if __name__ == '__main__':
-    pass
+        self.df.drop_duplicates(inplace=True)
+
+        for col in self.df.columns:
+            self.df[col] = pd.to_numeric(self.df[col], errors='ignore')
+
+        print("\nBraki danych:")
+        print(self.df.isnull().sum())
+
+        return self
+    
