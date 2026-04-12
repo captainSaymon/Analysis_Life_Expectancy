@@ -69,3 +69,16 @@ class DataProcessor:
         print(self.df.isnull().sum())
 
         return self
+
+    # Przygotowanie cech
+    def prepare_features(self, target_column="Life expectancy "):
+        self.line()
+        print("\nPrzygotowanie cech")
+
+        self.df = pd.get_dummies(self.df, drop_first=True)
+
+        self.X = self.df.drop(columns=[target_column])
+        self.y = self.df[target_column]
+
+        return self
+    
