@@ -110,3 +110,14 @@ class DataProcessor:
 
         return self
     
+    # Skalowanie danych
+    def scale_data(self):
+        self.line()
+        print("\nSkalowanie danych")
+
+        self.X_train = self.scaler.fit_transform(self.X_train)
+        self.X_val = self.scaler.transform(self.X_val)
+        self.X_test = self.scaler.transform(self.X_test)
+        
+        return self
+    
