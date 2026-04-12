@@ -41,8 +41,8 @@ class DataProcessor:
 
         self.df.drop_duplicates(inplace=True)
 
-        for col in self.df.columns:
-            self.df[col] = pd.to_numeric(self.df[col], errors='ignore')
+        if "Bare Nuclei" in self.df.columns:
+            self.df["Bare Nuclei"] = pd.to_numeric(self.df["Bare Nuclei"], errors="coerce")
 
         print("\nBraki danych:")
         print(self.df.isnull().sum())
@@ -58,22 +58,20 @@ class DataProcessor:
         for col in num_cols:
             self.df[col].fillna(self.df[col].median(), inplace=True)
 
-        cat_cols = self.df.select_dtypes(include='object').columns
-        for col in cat_cols:
-            self.df[col].fillna(self.df[col].mode()[0], inplace=True)
-
         print("Braki po uzupełnieniu:")
         print(self.df.isnull().sum())
 
         return self
 
     # Przygotowanie cech
-    def prepare_features(self, target_column="Life expectancy "):
+    def prepare_features(self, target_column=None):
         self.line()
         print("\nPrzygotowanie cech")
 
-        self.df = pd.get_dummies(self.df, drop_first=True)
+        if target_column is None:
+            target_column = self.df.columns[-1]
 
+        self.df = pd.get_dummies(self.df, drop_first=True)
         self.X = self.df.drop(columns=[target_column])
         self.y = self.df[target_column]
 
@@ -88,14 +86,16 @@ class DataProcessor:
             self.X,
             self.y,
             test_size=0.4,
-            random_state=self.random_state
+            random_state=self.random_state,
+            stratify=None
         )
 
         X_val, X_test, y_val, y_test = train_test_split(
             X_temp,
             y_temp,
             test_size=0.5,
-            random_state=self.random_state
+            random_state=self.random_state,
+            stratify=None
         )
 
         self.X_train, self.X_val, self.X_test = X_train, X_val, X_test
@@ -134,6 +134,6 @@ if __name__ == '__main__':
 
     processor.clean_data() \
          .handle_missing_values() \
-         .prepare_features(target_column="Life expectancy ") \
+         .prepare_features() \
          .split_data() \
          .scale_data()
