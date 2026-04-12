@@ -11,7 +11,7 @@ from data_fetch import DataFetch
 
 class DataProcessor:
     def __init__(self):
-        self.fetch_data()
+        self.df = None
 
         self.X = None
         self.y = None
@@ -133,6 +133,7 @@ class DataProcessor:
 
 if __name__ == '__main__':
     processor = DataProcessor()
+    processor.fetch_data()
 
     processor.clean_data() \
          .handle_missing_values() \
