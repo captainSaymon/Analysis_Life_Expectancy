@@ -22,9 +22,7 @@ import statsmodels.api as sm
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-# ==========================================
 # CONFIG
-# ==========================================
 class Config:
     K_NEIGHBORS = 9
     RANDOM_STATE = 42
@@ -32,9 +30,7 @@ class Config:
     SKW_LIMIT = 0.75
 
 
-# ==========================================
-# 1. DATA LOADER
-# ==========================================
+# DATA LOADER
 class DataLoader:
     def __init__(self, path):
         self.path = path
@@ -68,9 +64,7 @@ class DataLoader:
         return X_train, X_val, X_test, y_train, y_val, y_test, X.columns
 
 
-# ==========================================
-# 2. PREPROCESSOR
-# ==========================================
+# PREPROCESSOR
 class Preprocessor:
     def __init__(self):
         self.imputer = IterativeImputer(random_state=Config.RANDOM_STATE)
@@ -123,9 +117,7 @@ class Preprocessor:
         return X_train_std, X_val_std, X_test_std
 
 
-# ==========================================
-# 3. VIF REDUCTION
-# ==========================================
+# VIF REDUCTION
 class VIFReducer:
     def reduce(self, X_train_std, feature_names):
         print(f"\nKROK 5: Redukcja VIF (Próg: {Config.VIF_THRESHOLD})...")
@@ -150,9 +142,7 @@ class VIFReducer:
         return X_df, X_df.columns
 
 
-# ==========================================
-# 4. COOK DISTANCE
-# ==========================================
+# COOK DISTANCE
 class CookAnalyzer:
     def filter_outliers(self, X_train, y_train):
         print("\nKROK 6: Cook distance...")
@@ -172,9 +162,7 @@ class CookAnalyzer:
         return X_train[safe_idx], y_train.iloc[safe_idx]
 
 
-# ==========================================
-# 5. MODELS
-# ==========================================
+# MODELS
 class ModelTrainer:
     def __init__(self):
         self.models = {
@@ -215,9 +203,7 @@ class ModelTrainer:
         return best_model, best_name, scores
 
 
-# ==========================================
-# 6. EVALUATION + VISUALS
-# ==========================================
+# EVALUATION + VISUALS
 class Evaluator:
     def evaluate(self, model, X_test, y_test, model_name):
         print("\nKROK 8: Test końcowy...")
@@ -279,9 +265,7 @@ class Evaluator:
         plt.show()
 
 
-# ==========================================
-# 7. PIPELINE ORCHESTRATOR
-# ==========================================
+# PIPELINE ORCHESTRATOR
 class LifeExpectancyPipeline:
     def __init__(self, path):
         self.loader = DataLoader(path)
@@ -332,9 +316,7 @@ class LifeExpectancyPipeline:
         )
 
 
-# ==========================================
 # RUN
-# ==========================================
 if __name__ == "__main__":
     pipeline = LifeExpectancyPipeline("Life Expectancy Data.csv")
     pipeline.run()
