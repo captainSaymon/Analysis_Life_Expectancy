@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from src.cook import CookAnalyzer
 from src.data_loader import DataLoader
@@ -17,41 +18,42 @@ class LifeExpectancyPipeline:
         self.eval = Evaluator()
 
     def run(self):
+        # Przygotowanie danych
         X_train, X_val, X_test, y_train, y_val, y_test, features = self.loader.load()
-
+        
+        # Preprocessing
         X_train, X_val, X_test = self.prep.impute(X_train, X_val, X_test)
-        y_train_f, y_val_f, y_test_f = y_train, y_val, y_test
-
         X_train, X_val, X_test = self.prep.transform_skew(X_train, X_val, X_test)
         X_train_std, X_val_std, X_test_std = self.prep.scale(X_train, X_val, X_test)
-
+        
+        # Redukcja wymiarów (VIF)
         X_vif, remaining = self.vif.reduce(X_train_std, features)
 
         X_train_final = X_vif.values
         X_val_final = pd.DataFrame(X_val_std, columns=features)[remaining].values
         X_test_final = pd.DataFrame(X_test_std, columns=features)[remaining].values
 
-        X_train_final, y_train_final = self.cook.filter_outliers(X_train_final, y_train_f)
+        # Usuwanie obserwacji odstających
+        X_train_final, y_train_final = self.cook.filter_outliers(X_train_final, y_train)
 
-        model, name, scores = self.trainer.train_and_select(
-            X_train_final, y_train_final,
-            X_val_final, y_val_f
-        )
+        # Wybór modelu
+        model, name, all_scores = self.trainer.train_and_select(X_train_final, y_train_final, X_val_final, y_val)
 
-        preds, _ = self.eval.evaluate(model, X_test_final, y_test_f, name)
+        # Statystyczna istotność
+        self.eval.report_statistical_significance(X_train_final, y_train_final, remaining)
 
-        self.eval.feature_importance(
-            model,
-            X_test_final,
-            y_test_f,
-            remaining
-        )
+        # Ewaluacja końcowa i Interpretowalność
+        preds, _ = self.eval.evaluate(model, X_test_final, y_test, name)
+        
+        # Wizualizacja błędów
+        self.eval.plot_residuals(y_test, preds, name)
+        
+        # Ważność cech
+        self.eval.feature_importance(model, X_test_final, y_test, remaining)
+        
+        # Porównanie metryk
+        self.eval.plot_model_comparison(all_scores)
 
-        self.eval.plots(
-            X_train_final,
-            X_test_final,
-            y_test_f,
-            preds,
-            remaining,
-            scores
-        )
+        print("\nPROJEKT ZAKOŃCZONY")
+        plt.tight_layout()
+        plt.show()
