@@ -54,6 +54,13 @@ class LifeExpectancyPipeline:
         # Porównanie metryk
         self.eval.plot_model_comparison(all_scores)
 
+        # Redukcja wymiarów (VIF)
+        X_vif, remaining = self.vif.reduce(X_train_std, features)
+
+        self.eval.plot_correlation_matrix(X_vif.values, remaining)
+
+        X_train_final = X_vif.values
+
         print("\nPROJEKT ZAKOŃCZONY")
         plt.tight_layout()
         plt.show()

@@ -73,3 +73,13 @@ class Evaluator:
         plt.ylabel("R2 Score")
         plt.title("Porównanie skuteczności modeli")
         plt.grid(True, axis='y', alpha=0.3)
+
+    def plot_correlation_matrix(self, X, feature_names):
+            print("\nGenerowanie macierzy korelacji...")
+            df_corr = pd.DataFrame(X, columns=feature_names)
+            corr_matrix = df_corr.corr()
+
+            plt.figure(figsize=(12, 10))
+            sns.heatmap(corr_matrix, annot=True, cmap='RdBu_r', center=0, fmt='.2f', linewidths=0.5)
+            plt.title("Macierz Korelacji Cech")
+            plt.tight_layout()
