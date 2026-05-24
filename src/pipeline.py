@@ -1,5 +1,10 @@
+import matplotlib
+
+matplotlib.use('Agg')  # Blokuje błędy z tkinter na Windows/Linux
+
 import pandas as pd
 import matplotlib.pyplot as plt
+import joblib
 
 from src.cook import CookAnalyzer
 from src.data_loader import DataLoader
@@ -7,6 +12,7 @@ from src.evaluator import Evaluator
 from src.model_trainer import ModelTrainer
 from src.preprocessor import Preprocessor
 from src.vif_reducer import VIFReducer
+
 
 class LifeExpectancyPipeline:
     def __init__(self, path):
@@ -17,50 +23,50 @@ class LifeExpectancyPipeline:
         self.trainer = ModelTrainer()
         self.eval = Evaluator()
 
+        self.best_model = None
+        self.model_name = ""
+        self.features = []
+        self.remaining = []
+
     def run(self):
-        # Przygotowanie danych
+        # 1. Przygotowanie danych
         X_train, X_val, X_test, y_train, y_val, y_test, features = self.loader.load()
-        
-        # Preprocessing
+        self.features = features
+
+        # 2. Preprocessing
         X_train, X_val, X_test = self.prep.impute(X_train, X_val, X_test)
         X_train, X_val, X_test = self.prep.transform_skew(X_train, X_val, X_test)
         X_train_std, X_val_std, X_test_std = self.prep.scale(X_train, X_val, X_test)
-        
-        # Redukcja wymiarów (VIF)
+
+        # 3. Redukcja wymiarów (VIF)
         X_vif, remaining = self.vif.reduce(X_train_std, features)
+        self.remaining = remaining
 
         X_train_final = X_vif.values
         X_val_final = pd.DataFrame(X_val_std, columns=features)[remaining].values
         X_test_final = pd.DataFrame(X_test_std, columns=features)[remaining].values
 
-        # Usuwanie obserwacji odstających
+        # 4. Usuwanie obserwacji odstających (Cook's Distance)
         X_train_final, y_train_final = self.cook.filter_outliers(X_train_final, y_train)
 
-        # Wybór modelu
-        model, name, all_scores = self.trainer.train_and_select(X_train_final, y_train_final, X_val_final, y_val)
+        # 5. Wybór modelu i trening
+        self.best_model, self.model_name, all_scores = self.trainer.train_and_select(
+            X_train_final, y_train_final, X_val_final, y_val
+        )
 
-        # Statystyczna istotność
+        # 6. Analiza statystyczna i generowanie wykresów w tle
         self.eval.report_statistical_significance(X_train_final, y_train_final, remaining)
 
-        # Ewaluacja końcowa i Interpretowalność
-        preds, _ = self.eval.evaluate(model, X_test_final, y_test, name)
-        
-        # Wizualizacja błędów
-        self.eval.plot_residuals(y_test, preds, name)
-        
-        # Ważność cech
-        self.eval.feature_importance(model, X_test_final, y_test, remaining)
-        
-        # Porównanie metryk
+        preds, _ = self.eval.evaluate(self.best_model, X_test_final, y_test, self.model_name)
+
+        # Wywołanie pełnych wizualizacji z Twojego oryginalnego potoku
+        self.eval.plot_residuals(y_test, preds, self.model_name)
+        self.eval.feature_importance(self.best_model, X_test_final, y_test, remaining)
         self.eval.plot_model_comparison(all_scores)
-
-        # Redukcja wymiarów (VIF)
-        X_vif, remaining = self.vif.reduce(X_train_std, features)
-
         self.eval.plot_correlation_matrix(X_vif.values, remaining)
 
-        X_train_final = X_vif.values
+        # 7. Serializacja całego potoku do pliku binarnego dla Streamlita
+        joblib.dump(self, 'model_data.pkl')
 
-        print("\nPROJEKT ZAKOŃCZONY")
-        plt.tight_layout()
-        plt.show()
+        print("\n[SUKCES] PROJEKT ZAKOŃCZONY POMYŚLNIE.")
+        print("Wszystkie metryki policzone, a kompletny obiekt zapisano w 'model_data.pkl'.")
