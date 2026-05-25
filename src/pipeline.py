@@ -1,7 +1,3 @@
-import matplotlib
-
-matplotlib.use('Agg')  # Blokuje błędy z tkinter na Windows/Linux
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
@@ -54,12 +50,12 @@ class LifeExpectancyPipeline:
             X_train_final, y_train_final, X_val_final, y_val
         )
 
-        # 6. Analiza statystyczna i generowanie wykresów w tle
+        # 6. Analiza statystyczna i generowanie wykresów
         self.eval.report_statistical_significance(X_train_final, y_train_final, remaining)
 
         preds, _ = self.eval.evaluate(self.best_model, X_test_final, y_test, self.model_name)
 
-        # Wywołanie pełnych wizualizacji z Twojego oryginalnego potoku
+        # Wywołanie pełnych wizualizacji
         self.eval.plot_residuals(y_test, preds, self.model_name)
         self.eval.feature_importance(self.best_model, X_test_final, y_test, remaining)
         self.eval.plot_model_comparison(all_scores)
@@ -70,3 +66,7 @@ class LifeExpectancyPipeline:
 
         print("\n[SUKCES] PROJEKT ZAKOŃCZONY POMYŚLNIE.")
         print("Wszystkie metryki policzone, a kompletny obiekt zapisano w 'model_data.pkl'.")
+
+        # Fizyczne wyrenderowanie okien z wykresami na ekranie komputera
+        print("\nOtwieranie okien z wykresami analitycznymi...")
+        plt.show()
