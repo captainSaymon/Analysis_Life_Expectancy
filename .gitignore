@@ -1,2 +1,11 @@
+# Python
 __pycache__/
 *.pyc
+
+# PyCharm / IDE
+.idea/
+
+# Środowisko wirtualne (jeśli używasz)
+.venv/
+venv/
+env/
